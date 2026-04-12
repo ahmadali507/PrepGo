@@ -88,18 +88,24 @@ const InterviewGenerationClient = ({ user }: InterviewGenerationClientProps) => 
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
-              href="/interviews"
+              href="/interviews/generate"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold transition-transform hover:translate-x-1 hover:shadow-lg"
             >
-              Go to Interview Hub
+              Generate an interview
               <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/interviews"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 bg-white/5 text-white font-semibold transition hover:bg-white/10"
+            >
+              Interview hub
             </Link>
             <div className="flex-1 min-w-[220px] bg-white/5 border border-white/10 rounded-2xl p-4">
               <p className="text-sm text-blue-200 font-semibold uppercase tracking-wide mb-2">
                 Tip
               </p>
               <p className="text-sm text-gray-300">
-                Use the “Generate Interview” button in the hub to create a plan tailored to your role, stack, and experience.
+                The generate page walks you through role, stack, level, and voice vs text — then your plan appears in the hub.
               </p>
             </div>
           </div>

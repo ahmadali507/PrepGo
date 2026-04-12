@@ -13,6 +13,8 @@ interface Feedback {
   createdAt: string;
 }
 
+type InterviewSessionMode = "simple" | "vapi";
+
 interface Interview {
   id: string;
   role: string;
@@ -25,6 +27,8 @@ interface Interview {
   finalized: boolean;
   summary?: string;
   plan?: InterviewPlan;
+  /** How practice starts: text UI vs voice. Missing on old docs — treated as `"vapi"`. */
+  sessionMode?: InterviewSessionMode;
 }
 
 interface InterviewPlan {
@@ -106,6 +110,7 @@ interface GenerateInterviewParams {
   type: string;
   amount: number;
   techstack: string[];
+  sessionMode: InterviewSessionMode;
 }
 
 interface TechIconProps {

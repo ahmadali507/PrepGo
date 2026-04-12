@@ -1,12 +1,11 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Plus, Filter, Search, X, Sparkles } from 'lucide-react';
-import { useState, FormEvent, ChangeEvent, useEffect, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { Search, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import InterviewCard from '@/components/InterviewCard';
-import { generateInterview } from '@/lib/actions/general.action';
+import type { InterviewSessionMode } from '@/lib/utils';
 
 interface Interview {
   id: string;
@@ -14,6 +13,7 @@ interface Interview {
   type: string;
   techstack: string[];
   createdAt: string;
+  sessionMode?: InterviewSessionMode | null;
   feedback?: {
     totalScore?: number;
     finalAssessment?: string;
@@ -34,89 +34,9 @@ interface InterviewsClientProps {
   user: User | null;
 }
 
-interface FormData {
-  role: string;
-  type: string;
-  level: string;
-  amount: string;
-  techstack: string;
-}
-
 export default function InterviewsClient({ userInterviews, allInterviews, user }: InterviewsClientProps) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'my' | 'all'>('my');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTransitioning, startTransition] = useTransition();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<FormData>({
-    role: "",
-    type: "mix",
-    level: "entry",
-    amount: "3",
-    techstack: "",
-  });
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    const techArray = formData.techstack
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    startTransition(() => {
-      setLoading(true);
-      generateInterview({
-        userId: user?.id || '',
-        role: formData.role,
-        level: formData.level,
-        type: formData.type,
-        amount: Number(formData.amount) || 3,
-        techstack: techArray,
-      })
-        .then((result) => {
-          if (!result?.success) {
-            setError(result?.error || 'Unable to generate interview. Please try again.');
-            return;
-          }
-
-          setIsModalOpen(false);
-          setFormData({
-            role: '',
-            type: 'mix',
-            level: 'entry',
-            amount: '3',
-            techstack: '',
-          });
-          router.refresh();
-        })
-        .catch((error) => {
-          console.error('Error generating interview:', error);
-          setError('Unexpected error generating interview. Please try again.');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    });
-  };
 
   const displayedInterviews = activeTab === 'my' ? userInterviews : allInterviews;
   const filteredInterviews = displayedInterviews.filter(interview =>
@@ -145,15 +65,13 @@ export default function InterviewsClient({ userInterviews, allInterviews, user }
                 <p className="text-gray-400">Manage and review all your mock interviews</p>
               </div>
               
-              <motion.button
-                onClick={() => setIsModalOpen(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2"
+              <Link
+                href="/interviews/generate"
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Sparkles className="w-5 h-5" />
                 Generate Interview
-              </motion.button>
+              </Link>
             </div>
 
             {/* Tabs and Search */}
@@ -161,6 +79,7 @@ export default function InterviewsClient({ userInterviews, allInterviews, user }
               {/* Tabs */}
               <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/10">
                 <button
+                  type="button"
                   onClick={() => setActiveTab('my')}
                   className={`px-6 py-2 rounded-lg font-medium transition-all ${
                     activeTab === 'my'
@@ -171,6 +90,7 @@ export default function InterviewsClient({ userInterviews, allInterviews, user }
                   My Interviews ({userInterviews.length})
                 </button>
                 <button
+                  type="button"
                   onClick={() => setActiveTab('all')}
                   className={`px-6 py-2 rounded-lg font-medium transition-all ${
                     activeTab === 'all'
@@ -220,6 +140,7 @@ export default function InterviewsClient({ userInterviews, allInterviews, user }
                     createdAt={interview.createdAt}
                     feedback={interview.feedback}
                     techIcons={interview.techIcons}
+                    sessionMode={interview.sessionMode}
                   />
                 </motion.div>
               ))}
@@ -238,203 +159,18 @@ export default function InterviewsClient({ userInterviews, allInterviews, user }
                 {searchQuery ? 'Try adjusting your search' : 'Start your first interview to see it here'}
               </p>
               {!searchQuery && (
-                <motion.button
-                  onClick={() => setIsModalOpen(true)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition-all inline-flex items-center gap-2"
+                <Link
+                  href="/interviews/generate"
+                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition-all inline-flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Sparkles className="w-5 h-5" />
                   Create Your First Interview
-                </motion.button>
+                </Link>
               )}
             </motion.div>
           )}
         </div>
       </div>
-
-      {/* Interview Generation Modal */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => setIsModalOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", duration: 0.5 }}
-              className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto border border-white/10"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
-                    Generate Interview
-                  </h2>
-                  <p className="text-gray-400">
-                    Create a personalized interview practice session tailored to your needs.
-                  </p>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
-                >
-                  <X className="w-6 h-6" />
-                </motion.button>
-              </div>
-
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-500/10 border border-red-500/50 text-red-300 px-4 py-3 rounded-xl mb-6"
-                >
-                  <p className="font-medium">Error:</p>
-                  <p className="text-sm">{error}</p>
-                </motion.div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Role Input */}
-                <div>
-                  <label htmlFor="role" className="block text-sm font-medium text-gray-300 mb-2">
-                    Job Role <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    id="role"
-                    name="role"
-                    type="text"
-                    placeholder="e.g. Frontend Developer, Data Scientist, Product Manager"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 placeholder-gray-500 transition-all"
-                  />
-                </div>
-
-                {/* Type and Level Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-gray-300 mb-2">
-                      Interview Type
-                    </label>
-                    <select
-                      id="type"
-                      name="type"
-                      value={formData.type}
-                      onChange={handleSelectChange}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
-                    >
-                      <option value="technical">Technical</option>
-                      <option value="behavioral">Behavioral</option>
-                      <option value="mix">Mixed</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="level" className="block text-sm font-medium text-gray-300 mb-2">
-                      Experience Level
-                    </label>
-                    <select
-                      id="level"
-                      name="level"
-                      value={formData.level}
-                      onChange={handleSelectChange}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
-                    >
-                      <option value="entry">Entry Level</option>
-                      <option value="junior">Junior</option>
-                      <option value="mid">Mid-Level</option>
-                      <option value="senior">Senior</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Tech Stack Input */}
-                <div>
-                  <label htmlFor="techstack" className="block text-sm font-medium text-gray-300 mb-2">
-                    Technologies/Skills <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    id="techstack"
-                    name="techstack"
-                    type="text"
-                    placeholder="e.g. React, TypeScript, Node.js, AWS"
-                    value={formData.techstack}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 placeholder-gray-500 transition-all"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">Separate multiple technologies with commas</p>
-                </div>
-
-                {/* Number of Questions */}
-                <div>
-                  <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-2">
-                    Number of Questions
-                  </label>
-                  <select
-                    id="amount"
-                    name="amount"
-                    value={formData.amount}
-                    onChange={handleSelectChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
-                  >
-                    {[2, 3, 5, 7, 10].map(num => (
-                      <option key={num} value={num.toString()}>{num} Questions</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <motion.button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex-1 px-6 py-3 bg-white/5 border border-white/10 text-gray-300 rounded-xl hover:bg-white/10 transition-all font-medium"
-                  >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    type="submit"
-                    disabled={loading || isTransitioning}
-                    whileHover={{ scale: loading || isTransitioning ? 1 : 1.02 }}
-                    whileTap={{ scale: loading || isTransitioning ? 1 : 0.98 }}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-purple-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading || isTransitioning ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-5 h-5" />
-                        Generate Interview
-                      </>
-                    )}
-                  </motion.button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
-
-

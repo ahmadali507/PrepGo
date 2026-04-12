@@ -321,91 +321,10 @@ function LandingPageClient() {
         </div>
       </motion.div>
 
-      {/* Hire Me Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-black/30 backdrop-blur-lg">
-        <div className="max-w-6xl mx-auto px-4 py-14 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[260px_1fr] items-center">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col items-center text-center lg:items-start lg:text-left">
-              <div className="w-40 h-40 mb-5">
-                <Image
-                  src="/svg/QR.svg"
-                  alt="Scan to connect with Abdullah Mansoor"
-                  width={160}
-                  height={160}
-                  className="w-full h-full object-contain"
-                  priority
-                />
-              </div>
-              <p className="text-white font-semibold text-lg">Scan &amp; Connect</p>
-              <p className="text-white/60 text-sm mt-2">
-                Point your camera at the QR code to view my freelance profile and portfolio instantly.
-              </p>
-            </div>
-
-            <div className="space-y-8">
-              <div className="space-y-3">
-                <h3 className="text-3xl font-bold text-white">Let’s Build Something Great Together</h3>
-                <p className="text-white/70 text-base max-w-2xl">
-                  I help teams and founders craft human-centered interview experiences, powered by AI.
-                  Explore my work, see testimonials, and book a quick intro call through the links below.
-                </p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-3">
-                {[
-                  {
-                    name: "Upwork",
-                    href: "https://www.upwork.com/freelancers/~016dc2f789808a401f",
-                    description: "View contracts, reviews, and availability.",
-                  },
-                  {
-                    name: "LinkedIn",
-                    href: "https://www.linkedin.com/in/abdullah-608-mansoor",
-                    description: "Connect and follow professional updates.",
-                  },
-                  {
-                    name: "Portfolio",
-                    href: "https://your-portfolio-link.com",
-                    description: "See recent product design and AI projects.",
-                  },
-                ].map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all px-5 py-4 flex flex-col gap-2"
-                  >
-                    <span className="text-white font-semibold text-lg flex items-center gap-2">
-                      {link.name}
-                      <motion.span
-                        className="inline-block h-1.5 w-1.5 rounded-full bg-white/80"
-                        animate={{ scale: [1, 1.4, 1] }}
-                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                      />
-                    </span>
-                    <span className="text-white/60 text-sm leading-snug group-hover:text-white/80 transition-colors">
-                      {link.description}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-white/60 text-sm border-t border-white/10 pt-6">
-                <p>&copy; {new Date().getFullYear()} Prepify. Crafted with care by your next hire.</p>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                  <Link
-                    href="mailto:abdullahmnsoor608@gmail.com"
-                    className="text-white hover:text-white/80 transition-colors"
-                  >
-                    abdullahmnsoor608@gmail.com
-                  </Link>
-                  
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <footer className="relative z-10 border-t border-white/10 bg-black/30 backdrop-blur-lg py-8">
+        <p className="text-center text-sm text-white/60">
+          &copy; {new Date().getFullYear()} PrepWise. All rights reserved.
+        </p>
       </footer>
 
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
@@ -9,7 +8,6 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  Mail,
   Sparkles,
   Target,
   TrendingUp,
@@ -23,6 +21,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { getInterviewPracticePath, type InterviewSessionMode } from "@/lib/utils";
 
 interface Interview {
   id: string;
@@ -30,6 +29,7 @@ interface Interview {
   type: string;
   techstack: string[];
   createdAt: string;
+  sessionMode?: InterviewSessionMode | null;
   feedback?: {
     totalScore?: number;
     finalAssessment?: string;
@@ -315,15 +315,15 @@ const Dashboard = ({ userInterviews = [], user }: DashboardProps) => {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Link
-                  href="/interview"
+                  href="/interviews/generate"
                   className="group flex flex-col gap-2 rounded-2xl border border-purple-400/30 bg-purple-500/10 p-4 transition hover:-translate-y-1 hover:border-purple-300 hover:bg-purple-500/20"
                 >
                   <div className="flex items-center justify-between text-sm font-semibold text-purple-100">
-                    Start Interview
+                    Generate interview
                     <Sparkles className="h-4 w-4" />
                   </div>
                   <p className="text-xs text-purple-200">
-                    Generate a new mock session with Gemini-powered rounds.
+                    Open the full form to build a new mock session for your role and stack.
                   </p>
                 </Link>
                 <Link
@@ -547,11 +547,10 @@ const Dashboard = ({ userInterviews = [], user }: DashboardProps) => {
                     sortedInterviews.slice(0, 5).map((interview) => (
                       <Link
                         key={interview.id}
-                        href={
-                          interview.feedback
-                            ? `/interview/${interview.id}/feedback`
-                            : `/interview/${interview.id}`
-                        }
+                        href={getInterviewPracticePath(interview.id, {
+                          feedback: interview.feedback,
+                          sessionMode: interview.sessionMode,
+                        })}
                         className="grid items-center gap-4 px-4 py-4 text-sm transition hover:bg-white/5 sm:grid-cols-[1.5fr_1fr_1fr_1fr]"
                       >
                         <div>
@@ -629,80 +628,10 @@ const Dashboard = ({ userInterviews = [], user }: DashboardProps) => {
         </div>
       </div>
 
-      <footer className="border-t border-white/10 bg-slate-950/90 py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="grid gap-8 lg:grid-cols-2 items-center">
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:block">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-2 sm:p-3">
-                  <Image
-                    src="/svg/QR.svg"
-                    width={120}
-                    height={120}
-                    alt="Hire me QR code"
-                    className="h-28 w-28 sm:h-32 sm:w-32 object-contain"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-blue-200">Work with me</p>
-                <h3 className="text-2xl font-semibold text-white">
-                  Need help shipping interview experiences or AI features?
-                </h3>
-                <p className="text-sm text-gray-400">
-                  Scan the QR code or use the links to connect on your favourite platform. Let’s build something interviewees love.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[
-                {
-                  label: "Upwork",
-                  href: "https://www.upwork.com/freelancers/~016dc2f789808a401f",
-                  description: "Contracts, reviews, availability.",
-                },
-                {
-                  label: "LinkedIn",
-                  href: "https://www.linkedin.com/in/abdullah-608-mansoor",
-                  description: "Connect and follow updates.",
-                },
-                {
-                  label: "Portfolio",
-                  href: "https://your-portfolio-link.com",
-                  description: "Recent builds & product work.",
-                },
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition hover:bg-white/10"
-                >
-                  <p className="flex items-center justify-between text-sm font-semibold text-white">
-                    {item.label}
-                    <ArrowUpRight className="h-4 w-4 text-white/70 transition group-hover:translate-x-1 group-hover:-translate-y-1" />
-                  </p>
-                  <p className="mt-1 text-xs text-gray-400 group-hover:text-gray-200">
-                    {item.description}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
-            <p>&copy; {new Date().getFullYear()} Prepify Dashboard · Designed for mock interview mastery.</p>
-            <a
-              href="mailto:abdullahmnsoor608@gmail.com"
-              className="inline-flex items-center gap-2 text-gray-300 hover:text-white"
-            >
-              <Mail className="h-4 w-4" />
-              abdullahmnsoor608@gmail.com
-            </a>
-          </div>
-        </div>
+      <footer className="border-t border-white/10 bg-slate-950/90 py-8">
+        <p className="text-center text-sm text-gray-400">
+          &copy; {new Date().getFullYear()} PrepWise. All rights reserved.
+        </p>
       </footer>
     </div>
   );

@@ -88,7 +88,8 @@ Create a new file named `.env.local` in the root of your project and add the fol
 
 ```
 NEXT_PUBLIC_VAPI_WEB_TOKEN=
-NEXT_PUBLIC_VAPI_WORKFLOW_ID=
+NEXT_PUBLIC_VAPI_ASSISTANT_ID=  # Preferred: Use assistant ID for voice calls
+NEXT_PUBLIC_VAPI_WORKFLOW_ID=   # Fallback: Use workflow ID if assistant ID is not available
 
 GOOGLE_GENERATIVE_AI_API_KEY=
 

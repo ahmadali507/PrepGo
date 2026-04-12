@@ -60,3 +60,27 @@ export const getInterviewCoverById = (id: string) => {
   const index = Math.abs(hash) % interviewCovers.length;
   return `/covers${interviewCovers[index]}`;
 };
+
+export type InterviewSessionMode = "simple" | "vapi";
+
+/** Legacy Firestore docs without `sessionMode` use voice (VAPI) practice. */
+export function resolveInterviewSessionMode(
+  mode: InterviewSessionMode | undefined | null
+): InterviewSessionMode {
+  return mode === "simple" ? "simple" : "vapi";
+}
+
+export function getInterviewPracticePath(
+  interviewId: string,
+  options: {
+    feedback?: unknown;
+    sessionMode?: InterviewSessionMode | null;
+  }
+): string {
+  if (options.feedback) {
+    return `/interview/${interviewId}/feedback`;
+  }
+  return resolveInterviewSessionMode(options.sessionMode) === "simple"
+    ? `/interview/${interviewId}`
+    : `/interview/${interviewId}/vapi`;
+}

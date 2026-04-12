@@ -3,6 +3,7 @@
 import { useState, FormEvent, ChangeEvent, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { generateInterview } from "@/lib/actions/general.action";
+import type { InterviewSessionMode } from "@/lib/utils";
 
 interface FormData {
   role: string;
@@ -10,6 +11,7 @@ interface FormData {
   level: string;
   amount: string;
   techstack: string;
+  sessionMode: InterviewSessionMode;
 }
 
 interface InterviewGenerateModalProps {
@@ -30,6 +32,7 @@ export default function InterviewGenerateModal({ userId, username = "Abdullah-cr
     level: "entry",
     amount: "3",
     techstack: "",
+    sessionMode: "vapi",
   });
 
   // Set current date and time on component mount and when modal opens
@@ -78,6 +81,7 @@ export default function InterviewGenerateModal({ userId, username = "Abdullah-cr
         type: formData.type,
         amount: Number(formData.amount) || 3,
         techstack: techArray,
+        sessionMode: formData.sessionMode,
       })
         .then((result) => {
           if (!result?.success) {
@@ -208,6 +212,36 @@ export default function InterviewGenerateModal({ userId, username = "Abdullah-cr
                     <option key={num} value={num.toString()}>{num} Questions</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="space-y-2">
+                <span className="block font-medium text-gray-300">Practice format</span>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <label className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-600 bg-gray-800/80 px-3 py-2 has-[:checked]:border-indigo-500">
+                    <input
+                      type="radio"
+                      name="sessionMode"
+                      value="simple"
+                      checked={formData.sessionMode === "simple"}
+                      onChange={() =>
+                        setFormData((prev) => ({ ...prev, sessionMode: "simple" }))
+                      }
+                    />
+                    <span className="text-sm text-gray-200">Text session</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-600 bg-gray-800/80 px-3 py-2 has-[:checked]:border-indigo-500">
+                    <input
+                      type="radio"
+                      name="sessionMode"
+                      value="vapi"
+                      checked={formData.sessionMode === "vapi"}
+                      onChange={() =>
+                        setFormData((prev) => ({ ...prev, sessionMode: "vapi" }))
+                      }
+                    />
+                    <span className="text-sm text-gray-200">Voice (Vapi)</span>
+                  </label>
+                </div>
               </div>
               
               <div className="flex justify-end gap-3 pt-4">

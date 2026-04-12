@@ -7,6 +7,7 @@ import {
   getFeedbackByInterviewId,
   getInterviewById,
 } from "@/lib/actions/general.action";
+import { getInterviewPracticePath } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { ArrowLeft, Repeat, Star, Calendar, TrendingUp, CheckCircle, AlertCircle } from "lucide-react";
@@ -184,7 +185,12 @@ const Feedback = async ({ params }: { params: Promise<{ id: string }> }) => {
               </button>
             </Link>
 
-            <Link href={`/interview/${id}`}>
+            <Link
+              href={getInterviewPracticePath(id, {
+                feedback: null,
+                sessionMode: interview.sessionMode,
+              })}
+            >
               <button className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 flex items-center gap-2 justify-center min-w-[200px]">
                 <Repeat className="w-5 h-5" />
                 Retake Interview

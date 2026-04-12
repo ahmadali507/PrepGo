@@ -151,9 +151,17 @@ const InterviewSession = ({
     stt: false,
   });
   const recognitionRef = useRef<any>(null);
+  /** Keeps latest responses for speech start (avoids stale closure). */
+  const responsesRef = useRef(responses);
+  /** Text already in the field when mic started — speech is rebuilt from Web Speech results only. */
+  const speechDictationPrefixRef = useRef<string>("");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+
+  useEffect(() => {
+    responsesRef.current = responses;
+  }, [responses]);
 
   useEffect(() => {
     const initialStatuses = rounds.reduce<Record<string, RoundState>>((acc, round, index) => {
@@ -292,34 +300,23 @@ const InterviewSession = ({
       recognitionRef.current.stop();
     }
 
+    speechDictationPrefixRef.current = responsesRef.current[prompt] ?? "";
+
     const recognition = new SpeechRecognition();
     recognition.interimResults = true;
     recognition.continuous = true;
     recognition.lang = "en-US";
 
-    recognition.onresult = (event: any) => {
-      let finalTranscript = "";
-      let interimTranscript = "";
-
-      for (let i = event.resultIndex; i < event.results.length; i += 1) {
-        const result = event.results[i];
-        const text = result[0].transcript;
-        if (result.isFinal) {
-          finalTranscript += text;
-        } else {
-          interimTranscript += text;
-        }
+    recognition.onresult = (event: Event & { results: SpeechRecognitionResultList }) => {
+      let speechOnly = "";
+      for (let i = 0; i < event.results.length; i += 1) {
+        speechOnly += event.results[i][0].transcript;
       }
-
-      setResponses((prev) => {
-        const current = prev[prompt] || "";
-        const base = current.replace(new RegExp(`${interimTranscript}$`), "");
-        const updated = `${base}${finalTranscript || interimTranscript}`.trimStart();
-        return {
-          ...prev,
-          [prompt]: updated,
-        };
-      });
+      const combined = `${speechDictationPrefixRef.current}${speechOnly}`;
+      setResponses((prev) => ({
+        ...prev,
+        [prompt]: combined,
+      }));
     };
 
     recognition.onerror = () => {

@@ -1,6 +1,4 @@
-import { generateText } from "ai";
-import { google } from "@ai-sdk/google";
-
+import { generateTextWithGeminiFallback } from "@/lib/ai/gemini-model";
 import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
 
@@ -8,8 +6,7 @@ export async function POST(request: Request) {
   const { type, role, level, techstack, amount, userid } = await request.json();
 
   try {
-    const { text: questions } = await generateText({
-      model: google("gemini-2.0-flash-001"),
+    const { text: questions } = await generateTextWithGeminiFallback({
       prompt: `You are an expert technical recruiter creating a comprehensive interview question set.
 
 ROLE DETAILS:
@@ -81,6 +78,7 @@ Generate ${amount} high-quality, role-appropriate interview questions now.
       questions: JSON.parse(questions),
       userId: userid,
       finalized: true,
+      sessionMode: "vapi" as const,
       coverImage: getRandomInterviewCover(),
       createdAt: new Date().toISOString(),
     };

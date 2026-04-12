@@ -1,8 +1,9 @@
 "use server";
 
-import { generateObject } from "ai";
-import { google } from "@ai-sdk/google";
-
+import {
+  formatGoogleAiError,
+  generateObjectWithGeminiFallback,
+} from "@/lib/ai/gemini-model";
 import { db } from "@/firebase/admin";
 import { feedbackSchema, interviewBlueprintSchema } from "@/constants";
 import { revalidatePath } from "next/cache";
@@ -18,10 +19,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
-    const { object } = await generateObject({
-      model: google("gemini-2.0-flash-001", {
-        structuredOutputs: false,
-      }),
+    const { object } = await generateObjectWithGeminiFallback({
       schema: feedbackSchema,
       prompt: `
         You are a senior hiring manager and expert interview coach analyzing a mock interview. Your feedback is critical for helping candidates improve their interview performance.
@@ -237,6 +235,8 @@ export async function deleteInterview({
 
 export async function generateInterview(params: GenerateInterviewParams) {
   const { userId, role, level, type, amount, techstack } = params;
+  const sessionMode =
+    params.sessionMode === "simple" ? "simple" : "vapi";
 
   if (!userId) {
     return { success: false, error: "You must be signed in to generate an interview." };
@@ -247,8 +247,7 @@ export async function generateInterview(params: GenerateInterviewParams) {
       .map((tech) => tech.trim())
       .filter((tech) => tech.length > 0);
 
-    const { object: blueprint } = await generateObject({
-      model: google("gemini-2.0-flash-001", { structuredOutputs: false }),
+    const { object: blueprint } = await generateObjectWithGeminiFallback({
       schema: interviewBlueprintSchema,
       prompt: `
 You are an expert technical interviewer designing a mock interview plan.
@@ -286,6 +285,7 @@ Keep questions concise, specific, and aligned to ${level} expectations.
       summary: blueprint.summary,
       plan: blueprint,
       finalized: false,
+      sessionMode,
       createdAt,
     });
 
@@ -296,7 +296,10 @@ Keep questions concise, specific, and aligned to ${level} expectations.
     console.error("Error generating interview:", error);
     return {
       success: false,
-      error: "Unable to generate interview plan. Please try again shortly.",
+      error: formatGoogleAiError(
+        error,
+        "Unable to generate interview plan. Please try again shortly."
+      ),
     };
   }
 }

@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import DisplayTechIcons from "./DisplayTechIcons";
 import DeleteInterviewButton from "./DeleteInterviewButton";
 
-import { cn, getInterviewCoverById } from "@/lib/utils";
+import { cn, getInterviewCoverById, getInterviewPracticePath, type InterviewSessionMode } from "@/lib/utils";
 
 interface InterviewCardProps {
   interviewId: string;
@@ -22,6 +22,7 @@ interface InterviewCardProps {
     createdAt?: Date | number | string;
   } | null;
   techIcons?: Array<{ tech: string; url: string }>;
+  sessionMode?: InterviewSessionMode | null;
 }
 
 const InterviewCard = ({
@@ -33,6 +34,7 @@ const InterviewCard = ({
   createdAt,
   feedback,
   techIcons,
+  sessionMode,
 }: InterviewCardProps) => {
   const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
 
@@ -69,6 +71,11 @@ const InterviewCard = ({
 
   // Generate a consistent cover image based on interview ID (deterministic)
   const coverImage = getInterviewCoverById(interviewId);
+
+  const practiceHref = getInterviewPracticePath(interviewId, {
+    feedback,
+    sessionMode,
+  });
 
   return (
     <div className="group relative w-full max-w-[400px] mx-auto">
@@ -151,27 +158,22 @@ const InterviewCard = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between gap-2 pt-4 border-t border-white/10">
-          <DeleteInterviewButton interviewId={interviewId} userId={userId} />
-          
-          <Link
-            href={
-              feedback
-                ? `/interview/${interviewId}/feedback`
-                : `/interview/${interviewId}`
-            }
-            className="flex-1"
-          >
-            <Button className={cn(
-              "w-full bg-gradient-to-r text-white font-semibold rounded-lg py-2.5 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-95 group/btn",
-              badgeConfig.gradient
-            )}>
-              <span className="flex items-center justify-center gap-2">
-                {feedback ? "View Feedback" : "Start Interview"}
-                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-              </span>
-            </Button>
-          </Link>
+        <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
+          <div className="flex items-center gap-2">
+            <DeleteInterviewButton interviewId={interviewId} userId={userId} />
+            
+            <Link href={practiceHref} className="flex-1">
+              <Button className={cn(
+                "w-full bg-gradient-to-r text-white font-semibold rounded-lg py-2.5 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-95 group/btn",
+                badgeConfig.gradient
+              )}>
+                <span className="flex items-center justify-center gap-2">
+                  {feedback ? "View Feedback" : "Start Interview"}
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
